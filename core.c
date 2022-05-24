@@ -129,7 +129,7 @@ void retro_run(void) {
   for (int i = 0; i < audio_len / 2; i++) {
     audio_buf[i * 2] = audio_buf[i * 2 + 1] = audio[i];
   }
-  audio_batch_cb(audio, audio_len / 2);
+  audio_batch_cb(audio_buf, audio_len / 2);
 }
 
 bool retro_load_game(const struct retro_game_info *info) {
