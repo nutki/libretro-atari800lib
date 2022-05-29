@@ -26,6 +26,7 @@ void core_handle_input(void);
 // Common Variables
 extern input_template_t input;
 extern retro_input_state_t input_state_cb;
+extern uint8_t keyboard_state[RETROK_LAST];
 
 // Common functions
 const bool get_artifacting_mode_is_new();

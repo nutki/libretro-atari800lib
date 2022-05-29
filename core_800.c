@@ -1,0 +1,234 @@
+#include "core.h"
+#include "libatari800.h"
+#include "libretro.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#ifndef AKEY_0
+
+#define AKEY_0 0x32
+#define AKEY_1 0x1f
+#define AKEY_2 0x1e
+#define AKEY_3 0x1a
+#define AKEY_4 0x18
+#define AKEY_5 0x1d
+#define AKEY_6 0x1b
+#define AKEY_7 0x33
+#define AKEY_8 0x35
+#define AKEY_9 0x30
+
+#define AKEY_a 0x3f
+#define AKEY_b 0x15
+#define AKEY_c 0x12
+#define AKEY_d 0x3a
+#define AKEY_e 0x2a
+#define AKEY_f 0x38
+#define AKEY_g 0x3d
+#define AKEY_h 0x39
+#define AKEY_i 0x0d
+#define AKEY_j 0x01
+#define AKEY_k 0x05
+#define AKEY_l 0x00
+#define AKEY_m 0x25
+#define AKEY_n 0x23
+#define AKEY_o 0x08
+#define AKEY_p 0x0a
+#define AKEY_q 0x2f
+#define AKEY_r 0x28
+#define AKEY_s 0x3e
+#define AKEY_t 0x2d
+#define AKEY_u 0x0b
+#define AKEY_v 0x10
+#define AKEY_w 0x2e
+#define AKEY_x 0x16
+#define AKEY_y 0x2b
+#define AKEY_z 0x17
+
+#endif
+
+struct keymap keymap[] = {
+    {RETROK_0, AKEY_0},
+    {RETROK_1, AKEY_1},
+    {RETROK_2, AKEY_2},
+    {RETROK_3, AKEY_3},
+    {RETROK_4, AKEY_4},
+    {RETROK_5, AKEY_5},
+    {RETROK_6, AKEY_6},
+    {RETROK_7, AKEY_7},
+    {RETROK_8, AKEY_8},
+    {RETROK_9, AKEY_9},
+    {RETROK_SPACE, AKEY_SPACE},
+    {RETROK_a, AKEY_a},
+    {RETROK_b, AKEY_b},
+    {RETROK_c, AKEY_c},
+    {RETROK_d, AKEY_d},
+    {RETROK_e, AKEY_e},
+    {RETROK_f, AKEY_f},
+    {RETROK_g, AKEY_g},
+    {RETROK_h, AKEY_h},
+    {RETROK_i, AKEY_i},
+    {RETROK_j, AKEY_j},
+    {RETROK_k, AKEY_k},
+    {RETROK_l, AKEY_l}, // FIXME AKEY_l is zero
+    {RETROK_m, AKEY_m},
+    {RETROK_n, AKEY_n},
+    {RETROK_o, AKEY_o},
+    {RETROK_p, AKEY_p},
+    {RETROK_q, AKEY_q},
+    {RETROK_r, AKEY_r},
+    {RETROK_s, AKEY_s},
+    {RETROK_t, AKEY_t},
+    {RETROK_u, AKEY_u},
+    {RETROK_v, AKEY_v},
+    {RETROK_w, AKEY_w},
+    {RETROK_x, AKEY_x},
+    {RETROK_y, AKEY_y},
+    {RETROK_z, AKEY_z},
+    {RETROK_RETURN, AKEY_RETURN},
+    {RETROK_ESCAPE, AKEY_ESCAPE},
+    {RETROK_TAB, AKEY_TAB},
+    {RETROK_BACKSPACE, AKEY_BACKSPACE},
+    {RETROK_COMMA, AKEY_COMMA},
+    {RETROK_PERIOD, AKEY_FULLSTOP},
+    {RETROK_SLASH, AKEY_SLASH},
+    {RETROK_SEMICOLON, AKEY_SEMICOLON},
+    {RETROK_RALT, AKEY_ATARI},
+    {RETROK_MINUS, AKEY_MINUS},
+    {RETROK_EQUALS, AKEY_EQUAL},
+    {RETROK_LEFTBRACE, AKEY_LESS},
+    {RETROK_RIGHTBRACE, AKEY_GREATER},
+    {RETROK_QUOTE, AKEY_PLUS},
+    {RETROK_BACKSLASH, AKEY_ASTERISK},
+    {RETROK_CAPSLOCK, AKEY_CAPSTOGGLE},
+
+    // 1200XE
+    {RETROK_HELP, AKEY_HELP},
+    {RETROK_F1, AKEY_F1},
+    {RETROK_F2, AKEY_F2},
+    {RETROK_F3, AKEY_F3},
+    {RETROK_F4, AKEY_F4},
+
+    // macros
+    {RETROK_UP, AKEY_UP},
+    {RETROK_DOWN, AKEY_DOWN},
+    {RETROK_LEFT, AKEY_LEFT},
+    {RETROK_RIGHT, AKEY_RIGHT},
+    {0},
+};
+
+struct retro_input_descriptor retro_input_desc[] = {
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Trigger"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Option"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Rigt"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Analog X"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Analog Y"},
+    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Trigger"},
+    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Option"},
+    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down"},
+    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up"},
+    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left"},
+    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Rigt"},
+    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},
+    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
+    {1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Analog X"},
+    {1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Analog Y"},
+    {0}};
+
+struct retro_controller_description retro_controller_description[] = {
+    {"Atari Joystick", RETRO_DEVICE_JOYPAD},
+};
+struct retro_controller_info retro_controller_info[] = {
+    {retro_controller_description, 1}, {retro_controller_description, 1}, {0}};
+
+struct retro_core_option_definition retro_options[] = {
+    {"a5200_artifacting",
+     "NTSC Artifacting Emulation",
+     "Alters display colors for games relying on the composite NTSC signal artifacts. Game reload required.",
+     {
+         {"None", 0},
+         {"Auto", 0},
+         {"Blue/Brown 1", 0},
+         {"Blue/Brown 2", 0},
+         {"GTIA", 0},
+         {"CTIA", 0},
+         {"New Blue/Brown 1", 0},
+         {"New Blue/Brown 2", 0},
+         {"New GTIA", 0},
+         {"New CTIA", 0},
+     },
+     "Auto"},
+    {0},
+};
+
+bool supports_no_game = false;
+
+char *config_file_name = ".atari800lib.cfg";
+
+void core_get_system_info(struct retro_system_info *info) {
+  info->library_name = "Atari 800 (libatari800)";
+  info->valid_extensions = "xfd|atr|cdm|cas|bin|atx|car|com|xex";
+}
+
+int handle_joystick(int player, uint8_t *joy, uint8_t *trig) {
+  int left_x = input_state_cb(player, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
+  int left_y = input_state_cb(player, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y);
+  int val = input_state_cb(player, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+  int dir = 0;
+  if (val & (1 << RETRO_DEVICE_ID_JOYPAD_UP) || left_y < -ANALOG_MIN)
+    dir |= 1;
+  if (val & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN) || left_y > ANALOG_MIN)
+    dir |= 2;
+  if (val & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT) || left_x < -ANALOG_MIN)
+    dir |= 4;
+  if (val & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT) || left_x > ANALOG_MIN)
+    dir |= 8;
+  *trig = val & (1 << RETRO_DEVICE_ID_JOYPAD_A) ? 1 : 0;
+  *joy = dir;
+  return val;
+}
+
+void core_handle_input(void) {
+  int val = handle_joystick(0, &input.joy0, &input.trig0) | handle_joystick(1, &input.joy1, &input.trig1);
+  input.select = val & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+  input.start = val & (1 << RETRO_DEVICE_ID_JOYPAD_START) ? 1 : 0;
+  input.option = val & (1 << RETRO_DEVICE_ID_JOYPAD_Y) ? 1 : 0;
+  input.shift = keyboard_state[RETROK_LSHIFT] || keyboard_state[RETROK_RSHIFT] ? 1 : 0;
+  input.control = keyboard_state[RETROK_LCTRL] || keyboard_state[RETROK_RCTRL] ? 1 : 0;
+  // TODO: BREAK key?
+}
+
+const char *get_artifacting_mode(void) {
+  const char *mode_str = get_variable("a5200_artifacting");
+  if (!strncmp(mode_str, "New ", 4))
+    mode_str += 4;
+  if (!strcmp(mode_str, "None"))
+    return "0";
+  if (!strcmp(mode_str, "Blue/Brown 1"))
+    return "1";
+  if (!strcmp(mode_str, "Blue/Brown 2"))
+    return "2";
+  if (!strcmp(mode_str, "GTIA"))
+    return "3";
+  if (!strcmp(mode_str, "CTIA"))
+    return "4";
+  return "0";
+}
+
+void core_load_game(const char *last_file_name) {
+  const char *test_args[] = {"-ntsc-artif", get_artifacting_mode_is_new() ? "ntsc-new" : "ntsc-old",
+                             "-artif",      get_artifacting_mode(),
+                             "-xl",       "-no-autosave-config",
+                             "-config",     config_file_path,
+                             "-ntsc",       "-audio16",
+                             "-nostereo",   last_file_name,
+                             NULL};
+  libatari800_init(-1, (char **)test_args);
+}
+
+int core_get_main_memory_size() { return 64 * 1024; }

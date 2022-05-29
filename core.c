@@ -30,7 +30,7 @@ static uint16_t palette[256] = {
     8576,  8640,  8704,  21155, 33606, 37894, 44231, 50471, 54696, 56839, 58951, 59078, 59174, 61323, 65519, 65519,
     16576, 22752, 28961, 35266, 43651, 45860, 48038, 54311, 58504, 60681, 64875, 64939, 65036, 65070, 65104, 65104};
 
-static uint8_t keyboard_state[RETROK_LAST];
+uint8_t keyboard_state[RETROK_LAST];
 void retro_keyboard_event_cb(bool down, unsigned keycode, uint32_t character, uint16_t key_modifiers) {
   if (keycode)
     keyboard_state[keycode] = down;
@@ -60,7 +60,6 @@ void retro_get_system_info(struct retro_system_info *info) {
   info->need_fullpath = true;
   info->library_version = "4.2.0";
   core_get_system_info(info);
-  //  info->valid_extensions = "xfd|atr|cdm|cas|bin|a52|atx|car|com|xex";
 }
 
 static retro_video_refresh_t video_cb;
@@ -148,11 +147,6 @@ void handle_input(void) {
   input.shift = 0;
   input.control = 0;
   core_handle_input();
-#if 0
-  input.select = val & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
-  input.start = val & (1 << RETRO_DEVICE_ID_JOYPAD_START) ? 1 : 0;
-  input.option = val & (1 << RETRO_DEVICE_ID_JOYPAD_Y) ? 1 : 0;
-#endif
   for (int i = 0; keymap[i].retro_code; i++) {
     if (keyboard_state[keymap[i].retro_code]) {
       input.keycode = keymap[i].a800_code;
