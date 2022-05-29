@@ -96,7 +96,7 @@ void retro_get_system_info(struct retro_system_info *info) {
   info->library_name = "Atari 5200 (libatari800)";
   info->library_version = "4.2.0";
   info->need_fullpath = true;
-//  info->valid_extensions = "xfd|atr|cdm|cas|bin|a52|atx|car|com|xex";
+  //  info->valid_extensions = "xfd|atr|cdm|cas|bin|a52|atx|car|com|xex";
   info->valid_extensions = "a52|car|bin";
 }
 
@@ -162,8 +162,8 @@ const char *get_artifacting_mode(uint32_t crc) {
     const char *mode;
   } auto_modes[] = {
       {0x9ad53bbc, "3"}, // Choplifter
-      {0x931a454a, "2"},
-      {0xc597c087, "3"},
+      {0x931a454a, "2"}, // Microgammon
+      {0xc597c087, "3"}, // Miniature Golf
       {0x35484751, "2"}, // AE
   };
   for (int i = 0; i < sizeof(auto_modes) / sizeof(auto_modes[0]); i++) {
@@ -182,15 +182,8 @@ bool get_artifacting_mode_is_new(void) {
 struct retro_controller_description retro_controller_description[] = {
     {"5200 Joystick", RETRO_DEVICE_JOYPAD},
 };
-struct retro_controller_info retro_controller_info[] = {{
-                                                            retro_controller_description,
-                                                            1,
-                                                        },
-                                                        {
-                                                            retro_controller_description,
-                                                            1,
-                                                        },
-                                                        {0}};
+struct retro_controller_info retro_controller_info[] = {
+    {retro_controller_description, 1}, {retro_controller_description, 1}, {0}};
 
 struct retro_input_descriptor retro_input_desc[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Trigger 1"},
