@@ -93,10 +93,11 @@ void retro_set_controller_port_device(unsigned port, unsigned device) {
 
 void retro_get_system_info(struct retro_system_info *info) {
   memset(info, 0, sizeof(*info));
-  info->library_name = "atari800lib";
+  info->library_name = "Atari 5200 (libatari800)";
   info->library_version = "4.2.0";
   info->need_fullpath = true;
-  info->valid_extensions = "xfd|atr|cdm|cas|bin|a52|zip|atx|car|com|xex";
+//  info->valid_extensions = "xfd|atr|cdm|cas|bin|a52|atx|car|com|xex";
+  info->valid_extensions = "a52|car|bin";
 }
 
 static retro_video_refresh_t video_cb;
