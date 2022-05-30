@@ -147,9 +147,15 @@ void handle_input(void) {
   input.shift = 0;
   input.control = 0;
   core_handle_input();
+  if (input.control)
+    input.keycode |= 0x80;
+  if (input.shift)
+    input.keycode |= 0x40;
   for (int i = 0; keymap[i].retro_code; i++) {
     if (keyboard_state[keymap[i].retro_code]) {
-      input.keycode = keymap[i].a800_code;
+      input.keycode |= keymap[i].a800_code;
+      if (!input.keycode)
+        input.keychar = 'l'; // Hack AKEY_l is equal to 0 which would be ignored by libatari800
       break;
     }
   }

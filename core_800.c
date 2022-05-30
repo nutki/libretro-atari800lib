@@ -70,7 +70,7 @@ struct keymap keymap[] = {
     {RETROK_i, AKEY_i},
     {RETROK_j, AKEY_j},
     {RETROK_k, AKEY_k},
-    {RETROK_l, AKEY_l}, // FIXME AKEY_l is zero
+    {RETROK_l, AKEY_l}, // HACK: AKEY_l is equal to 0 but libatari800 uses 0 instead of AKEY_NONE (-1)
     {RETROK_m, AKEY_m},
     {RETROK_n, AKEY_n},
     {RETROK_o, AKEY_o},
