@@ -1,5 +1,5 @@
 CFLAGS=-O3 -shared -Wall
-LIBATARI800REV=master
+LIBATARI800REV=c0f94a7bf15543d8feb87ba046c456087c9d8227
 
 all: libatari800-5200-libretro.so libatari800-libretro.so
 
@@ -10,7 +10,7 @@ libatari800-libretro.so: core.o core_800.o libatari800.a
 	gcc -shared -o $@ $^
 
 atari800.zip:
-	curl -L https://github.com/atari800/atari800/archive/refs/heads/${LIBATARI800REV}.zip -o $@
+	curl -L https://github.com/atari800/atari800/archive/${LIBATARI800REV}.zip -o $@
 
 atari800: atari800.zip
 	unzip $^
