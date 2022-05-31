@@ -155,7 +155,7 @@ void handle_input(void) {
     if (keyboard_state[keymap[i].retro_code]) {
       input.keycode |= keymap[i].a800_code;
       if (!input.keycode)
-        input.keychar = 'l'; // Hack AKEY_l is equal to 0 which would be ignored by libatari800
+        input.keychar = 'l'; // Hack: AKEY_l is equal to 0 which would be ignored by libatari800
       break;
     }
   }
