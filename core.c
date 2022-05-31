@@ -138,7 +138,7 @@ void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
 
 char *last_file_name;
 void retro_reset(void) {
-  retro_unload_game();
+  libatari800_exit();
   retro_load_game(0);
 }
 

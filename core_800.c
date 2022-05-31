@@ -45,6 +45,11 @@
 #define AKEY_y 0x2b
 #define AKEY_z 0x17
 
+#define AKEY_WARMSTART -2
+#define AKEY_COLDSTART -3
+#define AKEY_EXIT -4
+#define AKEY_BREAK -5
+
 #endif
 
 struct keymap keymap[] = {
@@ -142,17 +147,38 @@ struct retro_input_descriptor retro_input_desc[] = {
 
 struct retro_controller_description retro_controller_description[] = {
     {"Atari Joystick", RETRO_DEVICE_JOYPAD},
+    {"Atari Paddles", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)},
+    {"Atari ST Mouse", RETRO_DEVICE_MOUSE},
+    {"Amiga Mouse", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_MOUSE, 0)},
 };
 struct retro_controller_info retro_controller_info[] = {
-    {retro_controller_description, 1}, {retro_controller_description, 1}, {0}};
+    {retro_controller_description, 4}, {retro_controller_description, 1}, {0}};
 
 struct retro_core_option_definition retro_options[] = {
-    {"a5200_artifacting",
+    {"atari800lib_system",
+     "Atari System",
+     "Atari system to emulate.",
+     {{"800", 0}, {"800XL", 0}, {"1200XL", 0}, {"130XE", 0}, {"XE 320K", 0}, {"XE 1088K", 0}},
+     "800XL"},
+    {
+        "atari800lib_tvmode",
+        "Video Standard",
+        "Video Standard to use. Auto looks for 'PAL' in the file name.",
+        {{"Auto", 0}, {"NTSC", 0}, {"PAL", 0}},
+        "Auto",
+    },
+    {
+        "atari800lib_internalbasic",
+        "Internal BASIC",
+        "Boot with Basic rom. Auto looks for 'BASIC' in the file name.",
+        {{"Auto", 0}, {"Off", 0}, {"On", 0}},
+        "Auto",
+    },
+    {"atari800lib_artifacting",
      "NTSC Artifacting Emulation",
      "Alters display colors for games relying on the composite NTSC signal artifacts. Game reload required.",
      {
          {"None", 0},
-         {"Auto", 0},
          {"Blue/Brown 1", 0},
          {"Blue/Brown 2", 0},
          {"GTIA", 0},
@@ -162,7 +188,15 @@ struct retro_core_option_definition retro_options[] = {
          {"New GTIA", 0},
          {"New CTIA", 0},
      },
-     "Auto"},
+     "None"},
+    {
+        "atari800lib_sioaccel",
+        "SIO Acceleration",
+        "When disabled emulates actual IO wait time.",
+        {{"disabled", 0}, {"enabled", 0}},
+        "enabled",
+    },
+
     {0},
 };
 
@@ -200,11 +234,50 @@ void core_handle_input(void) {
   input.option = val & (1 << RETRO_DEVICE_ID_JOYPAD_Y) ? 1 : 0;
   input.shift = keyboard_state[RETROK_LSHIFT] || keyboard_state[RETROK_RSHIFT] ? 1 : 0;
   input.control = keyboard_state[RETROK_LCTRL] || keyboard_state[RETROK_RCTRL] ? 1 : 0;
-  // TODO: BREAK key?
+  input.special = keyboard_state[RETROK_F10] ? -AKEY_BREAK : 0;
+  input.special = keyboard_state[RETROK_F9] ? -AKEY_WARMSTART : 0;
 }
 
+// TODO make this case insensitive and smarter to avoid matching parts of words in `s`
+static int includes_word(const char *s, const char *word) { return strstr(s, word) ? 1 : 0; }
+static const char *get_system_model(void) {
+  const char *v = get_variable("atari800lib_system");
+  if (!strcmp(v, "800"))
+    return "-800";
+  if (!strcmp(v, "800XL"))
+    return "-xl";
+  if (!strcmp(v, "1200XL"))
+    return "-1200";
+  if (!strcmp(v, "130XE"))
+    return "-xe";
+  if (!strcmp(v, "XE 320K"))
+    return "-320xe";
+  if (!strcmp(v, "XE 1088K"))
+    return "-1088xe";
+  return "-error";
+}
+static const char *get_tv_mode(const char *filename) {
+  const char *v = get_variable("atari800lib_tvmode");
+  if (!strcmp(v, "NTSC"))
+    return "-ntsc";
+  if (!strcmp(v, "PAL"))
+    return "-pal";
+  return includes_word(filename, "pal") ? "-pal" : "-ntsc";
+}
+static int get_basic(const char *filename) {
+  const char *v = get_variable("atari800lib_internalbasic");
+  if (!strcmp(v, "Off"))
+    return 0;
+  if (!strcmp(v, "On"))
+    return 1;
+  return includes_word(filename, "basic");
+}
+static int get_sio_accel(void) {
+  const char *v = get_variable("atari800lib_sioaccel");
+  return strcmp(v, "enabled") == 0 ? 1 : 0;
+}
 const char *get_artifacting_mode(void) {
-  const char *mode_str = get_variable("a5200_artifacting");
+  const char *mode_str = get_variable("atari800lib_artifacting");
   if (!strncmp(mode_str, "New ", 4))
     mode_str += 4;
   if (!strcmp(mode_str, "None"))
@@ -220,15 +293,23 @@ const char *get_artifacting_mode(void) {
   return "0";
 }
 
-void core_load_game(const char *last_file_name) {
-  const char *test_args[] = {"-ntsc-artif", get_artifacting_mode_is_new() ? "ntsc-new" : "ntsc-old",
-                             "-artif",      get_artifacting_mode(),
-                             "-xl",       "-no-autosave-config",
-                             "-config",     config_file_path,
-                             "-ntsc",       "-audio16",
-                             "-nostereo",   last_file_name,
-                             NULL};
-  libatari800_init(-1, (char **)test_args);
+void core_load_game(const char *filename) {
+  const char *args[] = {get_system_model(),
+                        get_tv_mode(filename),
+                        get_basic(filename) ? "-basic" : "-nobasic",
+                        "-ntsc-artif",
+                        get_artifacting_mode_is_new() ? "ntsc-new" : "ntsc-old",
+                        "-artif",
+                        get_artifacting_mode(),
+                        "-config",
+                        config_file_path,
+                        "-nostereo",
+                        "-audio16",
+                        "-no-autosave-config",
+                        filename,
+                        get_sio_accel() ? NULL : "-nopatch",
+                        NULL};
+  libatari800_init(-1, (char **)args);
 }
 
 int core_get_main_memory_size() { return 64 * 1024; }

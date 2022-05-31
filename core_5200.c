@@ -87,7 +87,7 @@ struct retro_controller_info retro_controller_info[] = {
     {retro_controller_description, 1}, {retro_controller_description, 1}, {0}};
 
 struct retro_core_option_definition retro_options[] = {
-    {"a5200_artifacting",
+    {"a800lib_artifacting",
      "NTSC Artifacting Emulation",
      "Alters display colors for games relying on the composite NTSC signal artifacts. Game reload required.",
      {
@@ -216,7 +216,7 @@ void core_handle_input(void) {
 }
 
 const char *get_artifacting_mode(uint32_t crc) {
-  const char *mode_str = get_variable("a5200_artifacting");
+  const char *mode_str = get_variable("atari800lib_artifacting");
   if (!strncmp(mode_str, "New ", 4))
     mode_str += 4;
   if (!strcmp(mode_str, "None"))
