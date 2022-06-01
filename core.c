@@ -148,6 +148,7 @@ void handle_input(void) {
   input.keycode = 0;
   input.shift = 0;
   input.control = 0;
+  input.keychar = 0;
   core_handle_input();
   if (input.control)
     input.keycode |= 0x80;
@@ -161,6 +162,7 @@ void handle_input(void) {
       break;
     }
   }
+  if (input.keycode && !(input.keycode & 0x3f)) input.keycode = 0;
 }
 void retro_run(void) {
   input_poll_cb();
