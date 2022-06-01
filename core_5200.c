@@ -303,14 +303,15 @@ void core_load_game(const char *last_file_name) {
     cart_type = "73";
   else if (size == 512 * 1024)
     cart_type = "74";
-  const char *test_args[] = {"-ntsc-artif",  get_artifacting_mode_is_new() ? "ntsc-new" : "ntsc-old",
-                             "-artif",       get_artifacting_mode(crc),
-                             "-5200",        "-no-autosave-config",
-                             "-config",      config_file_path,
-                             "-ntsc",        "-audio16",
-                             "-nostereo",    "-cart-type",
-                             cart_type,      "-cart",
-                             last_file_name, NULL};
+  const char *test_args[] = {"-ntsc-artif", get_artifacting_mode_is_new() ? "ntsc-new" : "ntsc-old",
+                             "-artif",      get_artifacting_mode(crc),
+                             "-5200",       "-no-autosave-config",
+                             "-config",     config_file_path,
+                             "-ntsc",       "-audio16",
+                             "-sound",      "-nostereo",
+                             "-cart-type",  cart_type,
+                             "-cart",       last_file_name,
+                             NULL};
   libatari800_init(-1, (char **)test_args);
 }
 

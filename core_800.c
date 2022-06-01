@@ -305,6 +305,7 @@ void core_load_game(const char *filename) {
                         config_file_path,
                         "-nostereo",
                         "-audio16",
+                        "-sound",
                         "-no-autosave-config",
                         filename,
                         get_sio_accel() ? NULL : "-nopatch",
