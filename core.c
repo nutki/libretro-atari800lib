@@ -97,6 +97,7 @@ bool get_artifacting_mode_is_new(void) {
 
 const char *system_dir;
 char config_file_path[FILENAME_MAX];
+char fake_exe_file_path[FILENAME_MAX];
 void dummy_log(enum retro_log_level level, const char *fmt, ...) {}
 struct retro_log_callback l = {dummy_log};
 void retro_set_environment(retro_environment_t cb) {
@@ -120,8 +121,10 @@ void retro_set_environment(retro_environment_t cb) {
   environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &l);
   if (system_dir) {
     snprintf(config_file_path, sizeof(config_file_path) - 1, "%s/%s", system_dir, config_file_name);
+    snprintf(fake_exe_file_path, sizeof(fake_exe_file_path) - 1, "%s/atari800", system_dir);
   } else {
     strcpy(config_file_path, config_file_name);
+    strcpy(fake_exe_file_path, "atari800");
   }
   FILE *fp = fopen(config_file_path, "ab");
   if (fp)
@@ -162,7 +165,8 @@ void handle_input(void) {
       break;
     }
   }
-  if (input.keycode && !(input.keycode & 0x3f)) input.keycode = 0;
+  if (input.keycode && !(input.keycode & 0x3f))
+    input.keycode = 0;
 }
 void retro_run(void) {
   input_poll_cb();

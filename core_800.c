@@ -346,7 +346,8 @@ const char *get_artifacting_mode(void) {
 }
 
 void core_load_game(const char *filename) {
-  const char *args[] = {get_system_model(),
+  const char *args[] = {fake_exe_file_path,
+                        get_system_model(),
                         get_tv_mode(filename),
                         get_basic(filename) ? "-basic" : "-nobasic",
                         "-ntsc-artif",

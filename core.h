@@ -12,7 +12,7 @@ extern struct retro_input_descriptor retro_input_desc[];
 extern struct retro_controller_info retro_controller_info[];
 extern struct retro_core_option_definition retro_options[];
 extern bool supports_no_game;
-extern char *config_file_name, config_file_path[];
+extern char *config_file_name;
 extern struct retro_log_callback l;
 
 #define ANALOG_MIN 4096
@@ -30,6 +30,7 @@ extern retro_input_state_t input_state_cb;
 extern uint8_t keyboard_state[RETROK_LAST];
 #define NUM_PORTS 4
 extern unsigned port_device[NUM_PORTS];
+extern config_file_path[], fake_exe_file_path[];
 
 // Common functions
 const bool get_artifacting_mode_is_new();
