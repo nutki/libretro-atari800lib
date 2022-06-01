@@ -243,7 +243,7 @@ static int includes_word(const char *s, const char *word) { return strstr(s, wor
 static const char *get_system_model(void) {
   const char *v = get_variable("atari800lib_system");
   if (!strcmp(v, "800"))
-    return "-800";
+    return "-atari";
   if (!strcmp(v, "800XL"))
     return "-xl";
   if (!strcmp(v, "1200XL"))

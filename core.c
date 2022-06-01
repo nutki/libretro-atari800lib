@@ -87,7 +87,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info) {
 }
 
 bool get_artifacting_mode_is_new(void) {
-  const char *mode_str = get_variable("a5200_artifacting");
+  const char *mode_str = get_variable("atari800lib_artifacting");
   if (!strncmp(mode_str, "New ", 4))
     return true;
   return false;
