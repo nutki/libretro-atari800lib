@@ -30,7 +30,7 @@ extern retro_input_state_t input_state_cb;
 extern uint8_t keyboard_state[RETROK_LAST];
 #define NUM_PORTS 4
 extern unsigned port_device[NUM_PORTS];
-extern config_file_path[], fake_exe_file_path[];
+extern char config_file_path[], fake_exe_file_path[];
 
 // Common functions
 const bool get_artifacting_mode_is_new();
