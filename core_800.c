@@ -122,9 +122,11 @@ struct keymap keymap[] = {
     {0},
 };
 
-struct retro_input_descriptor retro_input_desc[] = {
+struct retro_input_descriptor retro_input_desc_joystick[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Trigger"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Space"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Option"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Return"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left"},
@@ -133,26 +135,47 @@ struct retro_input_descriptor retro_input_desc[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
     {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Analog X"},
     {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Analog Y"},
-    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Trigger"},
-    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Option"},
-    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down"},
-    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up"},
-    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left"},
-    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Rigt"},
-    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},
-    {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
-    {1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Analog X"},
-    {1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Analog Y"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Paddle B"},
+    {0}};
+struct retro_input_descriptor retro_input_desc_paddles[] = {
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Trigger A"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Trigger B"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Space"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Option"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Return"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Paddle A"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Paddle B"},
     {0}};
 
+struct retro_input_descriptor retro_input_desc[64], retro_input_desc_empty;
+
+#define RETRO_DEVICE_ATARI_PADDLES RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)
 struct retro_controller_description retro_controller_description[] = {
     {"Atari Joystick", RETRO_DEVICE_JOYPAD},
-    {"Atari Paddles", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)},
-    {"Atari ST Mouse", RETRO_DEVICE_MOUSE},
-    {"Amiga Mouse", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_MOUSE, 0)},
+    {"Atari Paddles", RETRO_DEVICE_ATARI_PADDLES},
 };
-struct retro_controller_info retro_controller_info[] = {
-    {retro_controller_description, 4}, {retro_controller_description, 1}, {0}};
+struct retro_controller_info retro_controller_info[] = {{retro_controller_description, 2},
+                                                        {retro_controller_description, 1},
+                                                        {retro_controller_description, 1},
+                                                        {retro_controller_description, 1},
+                                                        {0}};
+
+struct retro_input_descriptor *core_get_retro_input_descriptors() {
+  struct retro_input_descriptor *dst = retro_input_desc;
+  for (int i = 0; i < NUM_PORTS; i++) {
+    struct retro_input_descriptor *base =
+        port_device[0] == RETRO_DEVICE_ATARI_PADDLES ? retro_input_desc_paddles : retro_input_desc_joystick;
+    for (; base->description; base++) {
+      *dst = *base;
+      dst->port = i;
+      dst++;
+    }
+  }
+  *dst++ = retro_input_desc_empty;
+  return retro_input_desc;
+}
 
 struct retro_core_option_definition retro_options[] = {
     {"atari800lib_system",
@@ -209,7 +232,9 @@ void core_get_system_info(struct retro_system_info *info) {
   info->valid_extensions = "xfd|atr|cdm|cas|bin|atx|car|com|xex";
 }
 
-int handle_joystick(int player, uint8_t *joy, uint8_t *trig) {
+static int handle_joystick(int player, uint8_t *joy, uint8_t *trig) {
+  if (port_device[player] != RETRO_DEVICE_JOYPAD)
+    return 0;
   int left_x = input_state_cb(player, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
   int left_y = input_state_cb(player, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y);
   int val = input_state_cb(player, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
@@ -227,11 +252,38 @@ int handle_joystick(int player, uint8_t *joy, uint8_t *trig) {
   return val;
 }
 
+#define MOUSE_PORT 0
+#define POT_MIN 0
+#define POT_MAX 228
+static int handle_paddles(void) {
+  input.mouse_mode = 1;
+  if (port_device[MOUSE_PORT] == RETRO_DEVICE_ATARI_PADDLES) {
+    int val = input_state_cb(MOUSE_PORT, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+    int pot_a =
+        input_state_cb(MOUSE_PORT, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
+    int pot_b =
+        input_state_cb(MOUSE_PORT, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
+    input.mouse_buttons =
+        ((val & (1 << RETRO_DEVICE_ID_JOYPAD_A)) ? 1 : 0) | ((val & (1 << RETRO_DEVICE_ID_JOYPAD_B)) ? 1 : 0);
+    input.mousex = (pot_a + 32 * 1024) * POT_MAX / (64 * 1024);
+    input.mousey = (pot_b + 32 * 1024) * POT_MAX / (64 * 1024);
+    return val;
+  }
+  return 0;
+}
+
 void core_handle_input(void) {
-  int val = handle_joystick(0, &input.joy0, &input.trig0) | handle_joystick(1, &input.joy1, &input.trig1);
-  input.select = val & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
-  input.start = val & (1 << RETRO_DEVICE_ID_JOYPAD_START) ? 1 : 0;
-  input.option = val & (1 << RETRO_DEVICE_ID_JOYPAD_Y) ? 1 : 0;
+  input.mouse_mode = 0;
+  int val = handle_joystick(0, &input.joy0, &input.trig0) | handle_joystick(1, &input.joy1, &input.trig1) |
+            handle_joystick(2, &input.joy2, &input.trig2) | handle_joystick(3, &input.joy3, &input.trig3) |
+            handle_paddles();
+  input.start = (val & (1 << RETRO_DEVICE_ID_JOYPAD_START)) || keyboard_state[RETROK_F5] ? 1 : 0;
+  input.select = (val & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT)) || keyboard_state[RETROK_F6] ? 1 : 0;
+  input.option = (val & (1 << RETRO_DEVICE_ID_JOYPAD_Y)) || keyboard_state[RETROK_F7] ? 1 : 0;
+  if (val & (1 << RETRO_DEVICE_ID_JOYPAD_X))
+    input.keycode = AKEY_SPACE;
+  if (val & (1 << RETRO_DEVICE_ID_JOYPAD_R))
+    input.keycode = AKEY_RETURN;
   input.shift = keyboard_state[RETROK_LSHIFT] || keyboard_state[RETROK_RSHIFT] ? 1 : 0;
   input.control = keyboard_state[RETROK_LCTRL] || keyboard_state[RETROK_RCTRL] ? 1 : 0;
   input.special = keyboard_state[RETROK_F10] ? -AKEY_BREAK : 0;
@@ -303,6 +355,9 @@ void core_load_game(const char *filename) {
                         get_artifacting_mode(),
                         "-config",
                         config_file_path,
+                        "-directmouse",
+                        "-mouse",
+                        "pad",
                         "-nostereo",
                         "-audio16",
                         "-sound",
@@ -313,4 +368,4 @@ void core_load_game(const char *filename) {
   libatari800_init(-1, (char **)args);
 }
 
-int core_get_main_memory_size() { return 64 * 1024; }
+int core_get_main_memory_size() { return (strcmp(get_variable("atari800lib_system"), "800") == 0 ? 48 : 64) * 1024; }

@@ -50,11 +50,6 @@ void retro_deinit(void) {}
 
 unsigned retro_api_version(void) { return RETRO_API_VERSION; }
 
-void retro_set_controller_port_device(unsigned port, unsigned device) {
-  (void)port;
-  (void)device;
-}
-
 void retro_get_system_info(struct retro_system_info *info) {
   memset(info, 0, sizeof(*info));
   info->need_fullpath = true;
@@ -73,6 +68,13 @@ const char *get_variable(const char *key) {
   if (environ_cb)
     environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var);
   return var.value ? var.value : "";
+}
+
+unsigned port_device[NUM_PORTS] = {RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD};
+void retro_set_controller_port_device(unsigned port, unsigned device) {
+  if (port < NUM_PORTS)
+    port_device[port] = device;
+  environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, core_get_retro_input_descriptors());
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info) {

@@ -80,6 +80,10 @@ struct retro_input_descriptor retro_input_desc[] = {
     {1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, "1P Analog Y"},
     {0}};
 
+struct retro_input_descriptor *core_get_retro_input_descriptors() {
+  return retro_input_desc;
+}
+
 struct retro_controller_description retro_controller_description[] = {
     {"5200 Joystick", RETRO_DEVICE_JOYPAD},
 };
