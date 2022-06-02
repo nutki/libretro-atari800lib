@@ -192,7 +192,7 @@ bool retro_load_game(const struct retro_game_info *info) {
   if (info) {
     if (last_file_name)
       free(last_file_name);
-    last_file_name = strdup(info->path);
+    last_file_name = info->path ? strdup(info->path) : 0;
   }
   core_load_game(last_file_name);
   libatari800_clear_input_array(&input);
@@ -202,6 +202,7 @@ bool retro_load_game(const struct retro_game_info *info) {
 void retro_unload_game(void) {
   libatari800_exit();
   free(last_file_name);
+  last_file_name = 0;
 }
 
 unsigned retro_get_region(void) { return RETRO_REGION_NTSC; }

@@ -314,6 +314,8 @@ static const char *get_tv_mode(const char *filename) {
     return "-ntsc";
   if (!strcmp(v, "PAL"))
     return "-pal";
+  if (!filename)
+    return "-ntsc";
   return includes_word(filename, "pal") ? "-pal" : "-ntsc";
 }
 static int get_basic(const char *filename) {
@@ -322,7 +324,7 @@ static int get_basic(const char *filename) {
     return 0;
   if (!strcmp(v, "On"))
     return 1;
-  return includes_word(filename, "basic");
+  return filename ? includes_word(filename, "basic") : 1;
 }
 static int get_sio_accel(void) {
   const char *v = get_variable("atari800lib_sioaccel");
@@ -356,6 +358,7 @@ void core_load_game(const char *filename) {
                         get_artifacting_mode(),
                         "-config",
                         config_file_path,
+                        get_sio_accel() ? "-sound" : "-nopatch",
                         "-directmouse",
                         "-mouse",
                         "pad",
@@ -364,7 +367,6 @@ void core_load_game(const char *filename) {
                         "-sound",
                         "-no-autosave-config",
                         filename,
-                        get_sio_accel() ? NULL : "-nopatch",
                         NULL};
   libatari800_init(-1, (char **)args);
 }
