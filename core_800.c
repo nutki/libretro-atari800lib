@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #ifndef AKEY_0
 
@@ -290,8 +291,27 @@ void core_handle_input(void) {
   input.special = keyboard_state[RETROK_F9] ? -AKEY_WARMSTART : 0;
 }
 
-// TODO make this case insensitive and smarter to avoid matching parts of words in `s`
-static int includes_word(const char *s, const char *word) { return strstr(s, word) ? 1 : 0; }
+static int includes_word(const char *s, const char *word) {
+  while (*s) {
+    /* find start of a word */
+    while (*s && !isalpha(*s))
+      s++;
+    if (!*s) { // Not found
+      return 0;
+    }
+    const char *w = word;
+    for (; *w && isalpha(*s); w++, s++) {
+      if (tolower(*w) != tolower(*s))
+        break;
+    }
+    if (!*w)
+      return 1; // found complete key word
+    /* find end of a word */
+    while (isalpha(*s))
+      s++;
+  }
+  return 0;
+}
 static const char *get_system_model(void) {
   const char *v = get_variable("atari800lib_system");
   if (!strcmp(v, "800"))
@@ -314,9 +334,10 @@ static const char *get_tv_mode(const char *filename) {
     return "-ntsc";
   if (!strcmp(v, "PAL"))
     return "-pal";
-  if (!filename)
-    return "-ntsc";
-  return includes_word(filename, "pal") ? "-pal" : "-ntsc";
+  int has_pal = filename && includes_word(filename, "pal");
+  if (has_pal)
+    l.log(RETRO_LOG_INFO, "Detected PAL content");
+  return has_pal ? "-pal" : "-ntsc";
 }
 static int get_basic(const char *filename) {
   const char *v = get_variable("atari800lib_internalbasic");
@@ -324,7 +345,13 @@ static int get_basic(const char *filename) {
     return 0;
   if (!strcmp(v, "On"))
     return 1;
-  return filename ? includes_word(filename, "basic") : 1;
+  // No content run, assume BASIC
+  if (!filename)
+    return 1;
+  int has_basic = includes_word(filename, "basic");
+  if (has_basic)
+    l.log(RETRO_LOG_INFO, "Detected content requiring BASIC ROM");
+  return has_basic;
 }
 static int get_sio_accel(void) {
   const char *v = get_variable("atari800lib_sioaccel");
