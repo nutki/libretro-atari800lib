@@ -421,7 +421,7 @@
 #define PACKAGE_NAME "Atari800"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Atari800 5.0.0"
+#define PACKAGE_STRING "Atari800 4.2.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "atari800"
@@ -430,7 +430,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "5.0.0"
+#define PACKAGE_VERSION "4.2.0"
 
 /* Define to use page-based attribute array. */
 /* #undef PAGED_ATTRIB */
@@ -559,7 +559,7 @@
 /* #undef USE_UI_BASIC_ONSCREEN_KEYBOARD */
 
 /* Version number of package */
-#define VERSION "5.0.0"
+#define VERSION "4.2.0"
 
 /* Define to use very slow computer support (faster -refresh). */
 /* #undef VERY_SLOW */
