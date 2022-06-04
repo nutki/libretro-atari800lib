@@ -574,5 +574,5 @@ clean:
 	rm -f $(HEADERS)
 	rm -f $(TARGET)
 
-.PHONY: $(TARGET) clean clean-objs
+.PHONY: clean clean-objs
 endif
