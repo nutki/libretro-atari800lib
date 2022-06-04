@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "core.h"
-#include "libatari800.h"
+#include "libatari800/libatari800.h"
 #include "libretro.h"
 
 #define FRAME_BUF_WIDTH 384

@@ -1,6 +1,6 @@
 #ifndef _CORE_H
 #define _CORE_H
-#include "libatari800.h"
+#include "libatari800/libatari800.h"
 #include "libretro.h"
 
 // System specific variables

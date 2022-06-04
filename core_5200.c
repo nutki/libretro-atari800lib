@@ -1,5 +1,5 @@
 #include "core.h"
-#include "libatari800.h"
+#include "libatari800/libatari800.h"
 #include "libretro.h"
 #include <stdint.h>
 #include <stdio.h>
