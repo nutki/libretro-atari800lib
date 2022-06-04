@@ -4,8 +4,8 @@ LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro/libretro-common
 INCFLAGS := -I$(CORE_DIR)/atari800/src
 
 SOURCES_C := \
-	$(CORE_DIR)/core.c \
-	$(CORE_DIR)/core_800.c
+	$(CORE_DIR)/libretro/core.c \
+	$(CORE_DIR)/libretro/core_800.c
 
 SOURCES_C += \
 	$(CORE_DIR)/atari800/src/libatari800/api.c \
