@@ -1,4 +1,9 @@
-TARGET_NAME := libatari800
+ifdef WANT_5200
+	TARGET_NAME := libatari800_5200
+else
+	TARGET_NAME := libatari800
+endif
+
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 ifneq ($(GIT_VERSION)," unknown")
 	CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
