@@ -571,10 +571,10 @@
 /* #undef VIDEO_CODEC_PNG */
 
 /* Define to enable support for ZMBV video codec. */
-/* #undef VIDEO_CODEC_ZMBV */
+#define VIDEO_CODEC_ZMBV 1
 
 /* Define to enable support for AVI video/audio recording. */
-/* #undef VIDEO_RECORDING */
+#define VIDEO_RECORDING 1
 
 /* Define to emulate the Alien Group Voice Box. */
 #define VOICEBOX 1
