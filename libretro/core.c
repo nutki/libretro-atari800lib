@@ -6,6 +6,7 @@
 #include "core.h"
 #include "libatari800/libatari800.h"
 #include "libretro.h"
+#include "config.h"
 
 #define FRAME_BUF_WIDTH 384
 #define FRAME_BUF_HEIGHT 240
@@ -50,10 +51,13 @@ void retro_deinit(void) {}
 
 unsigned retro_api_version(void) { return RETRO_API_VERSION; }
 
+#ifndef GIT_VERSION
+#define GIT_VERSION "-unknown"
+#endif
 void retro_get_system_info(struct retro_system_info *info) {
   memset(info, 0, sizeof(*info));
   info->need_fullpath = true;
-  info->library_version = "4.2.0";
+  info->library_version = PACKAGE_VERSION GIT_VERSION;
   core_get_system_info(info);
 }
 
