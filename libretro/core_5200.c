@@ -329,3 +329,5 @@ void core_load_game(const char *last_file_name) {
 }
 
 int core_get_main_memory_size() { return 16 * 1024; }
+
+void core_set_environment() {}

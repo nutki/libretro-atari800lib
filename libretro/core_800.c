@@ -1,10 +1,10 @@
 #include "core.h"
 #include "libatari800/libatari800.h"
 #include "libretro.h"
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 
 #ifndef AKEY_0
 
@@ -230,7 +230,7 @@ char *config_file_name = ".atari800lib.cfg";
 
 void core_get_system_info(struct retro_system_info *info) {
   info->library_name = "Atari 800 (libatari800)";
-  info->valid_extensions = "xfd|atr|cdm|cas|bin|atx|car|com|xex";
+  info->valid_extensions = "xfd|atr|cdm|cas|bin|atx|car|com|xex|m3u";
 }
 
 static int handle_joystick(int player, uint8_t *joy, uint8_t *trig) {
@@ -374,7 +374,120 @@ const char *get_artifacting_mode(void) {
   return "0";
 }
 
+static bool is_ejected = false;
+static unsigned disk_index = 0, max_disk_index = 3;
+#define MAX_DISK_LABEL 128
+#define MAX_DISKS 10
+static struct {
+  char label[MAX_DISK_LABEL];
+  char path[FILENAME_MAX];
+} disk_info[MAX_DISKS];
+
+static bool set_eject_state(bool ejected) {
+  is_ejected = ejected;
+  return true;
+}
+static bool get_eject_state() { return is_ejected; }
+static unsigned get_image_index() { return disk_index; }
+static bool set_image_index(unsigned index) {
+  if (index >= max_disk_index)
+    return false;
+  if (index == disk_index)
+    return true;
+  disk_index = index;
+  libatari800_mount_disk_image(1, disk_info[disk_index].path, 0);
+  return true;
+}
+static unsigned get_num_images() { return max_disk_index; }
+static bool get_image_label(unsigned index, char *label, size_t len) {
+  strncpy(label, disk_info[index].label, len);
+  return true;
+}
+static const char *load_m3u(const char *path) {
+  static char line[FILENAME_MAX];
+  FILE *f = fopen(path, "ra");
+  if (!f)
+    return NULL;
+  char *s;
+  max_disk_index = 0; disk_index = 0; is_ejected = false;
+  while ((s = fgets(line, sizeof(line), f))) {
+    while (isspace(*s))
+      s++;
+    if (*s == '#')
+      continue;
+    int len = strlen(s);
+    while (len && isspace(s[len - 1]))
+      s[--len] = 0;
+    char *label = strchr(s, '|');
+    if (label) {
+      *label++ = 0;
+      len = strlen(s);
+    }
+    if (!len)
+      continue;
+    if (max_disk_index == MAX_DISKS) {
+      break;
+    }
+    snprintf(disk_info[max_disk_index].label, MAX_DISK_LABEL - 1, "%s", label ? label : s);
+    snprintf(disk_info[max_disk_index].path, FILENAME_MAX - 1, "%s/%s", content_dir, s);
+    max_disk_index++;
+  }
+  fclose(f);
+  if (!max_disk_index)
+    return NULL;
+  return disk_info[0].path;
+}
+
+// static bool replace_image_index(unsigned index, const struct retro_game_info *info) {
+//   printf("replace_image_index %d %s\n", index, info->path);
+//   return true;
+// }
+
+// static bool add_image_index() { max_disk_index++; return true; }
+// static bool set_initial_image(unsigned index, const char *path) {
+//   printf("set_initial_image %d %s\n", index, path);
+//   return true;
+// }
+
+// static bool get_image_path(unsigned index, char *path, size_t len) {
+//   printf("get_image_path %d %d\n", index, len);
+//   strncpy(path, disk_info[index].path, len);
+//   return true;
+// }
+
+struct retro_disk_control_ext_callback disk_control = {
+    set_eject_state,
+    get_eject_state,
+    get_image_index,
+    set_image_index,
+    get_num_images,
+    0,
+    0,
+    0,
+    0,
+    //  replace_image_index,
+    //  add_image_index,
+    //  set_initial_image,
+    //  get_image_path,
+    get_image_label,
+};
+
+void core_set_environment() {
+  bool res, has_ext_disk_control = environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &res) && res >= 1;
+  environ_cb(has_ext_disk_control ? RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE
+                                  : RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE,
+             &disk_control);
+}
+
+bool strcaseendswith(const char *str, const char *suffix) {
+  const char *suffix_pos = str + strlen(str) - strlen(suffix);
+  return suffix_pos >= str && strcasecmp(suffix_pos, suffix) == 0;
+}
+
 void core_load_game(const char *filename) {
+  if (strcaseendswith(filename, ".m3u")) {
+    filename = load_m3u(filename);
+  }
   const char *args[] = {fake_exe_file_path,
                         get_system_model(),
                         get_tv_mode(filename),

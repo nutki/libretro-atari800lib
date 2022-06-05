@@ -64,7 +64,7 @@ void retro_get_system_info(struct retro_system_info *info) {
 static retro_video_refresh_t video_cb;
 static retro_audio_sample_t audio_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
-static retro_environment_t environ_cb;
+retro_environment_t environ_cb;
 static retro_input_poll_t input_poll_cb;
 retro_input_state_t input_state_cb;
 const char *get_variable(const char *key) {
@@ -99,7 +99,7 @@ bool get_artifacting_mode_is_new(void) {
   return false;
 }
 
-const char *system_dir;
+const char *system_dir, *content_dir;
 char config_file_path[FILENAME_MAX];
 char fake_exe_file_path[FILENAME_MAX];
 void dummy_log(enum retro_log_level level, const char *fmt, ...) {}
@@ -122,6 +122,7 @@ void retro_set_environment(retro_environment_t cb) {
   uint64_t quirks = RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
   environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
   environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir);
+  environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &content_dir);
   environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &l);
   if (system_dir) {
     snprintf(config_file_path, sizeof(config_file_path) - 1, "%s/%s", system_dir, config_file_name);
@@ -133,6 +134,7 @@ void retro_set_environment(retro_environment_t cb) {
   FILE *fp = fopen(config_file_path, "ab");
   if (fp)
     fclose(fp);
+  core_set_environment();
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb) { audio_cb = cb; }
