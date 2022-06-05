@@ -16,6 +16,11 @@ extern char *config_file_name;
 extern struct retro_log_callback l;
 
 #define ANALOG_MIN 4096
+#ifdef _WIN32
+#define DEFAULT_SLASH "\\"
+#else
+#define DEFAULT_SLASH "/"
+#endif
 
 // System specific functions
 void core_get_system_info(struct retro_system_info *info);

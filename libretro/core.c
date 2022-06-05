@@ -125,8 +125,9 @@ void retro_set_environment(retro_environment_t cb) {
   environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &content_dir);
   environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &l);
   if (system_dir) {
-    snprintf(config_file_path, sizeof(config_file_path) - 1, "%s/%s", system_dir, config_file_name);
-    snprintf(fake_exe_file_path, sizeof(fake_exe_file_path) - 1, "%s/atari800", system_dir);
+    snprintf(config_file_path, sizeof(config_file_path) - 1, "%s" DEFAULT_SLASH "%s", system_dir, config_file_name);
+    // Pretend the emulator is run from the system directory so is will be included in the ROM file search
+    snprintf(fake_exe_file_path, sizeof(fake_exe_file_path) - 1, "%s" DEFAULT_SLASH "atari800", system_dir);
   } else {
     strcpy(config_file_path, config_file_name);
     strcpy(fake_exe_file_path, "atari800");

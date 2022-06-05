@@ -429,7 +429,7 @@ static const char *load_m3u(const char *path) {
       break;
     }
     snprintf(disk_info[max_disk_index].label, MAX_DISK_LABEL - 1, "%s", label ? label : s);
-    snprintf(disk_info[max_disk_index].path, FILENAME_MAX - 1, "%s/%s", content_dir, s);
+    snprintf(disk_info[max_disk_index].path, FILENAME_MAX - 1, "%s" DEFAULT_SLASH "%s", content_dir, s);
     max_disk_index++;
   }
   fclose(f);
@@ -438,37 +438,16 @@ static const char *load_m3u(const char *path) {
   return disk_info[0].path;
 }
 
-// static bool replace_image_index(unsigned index, const struct retro_game_info *info) {
-//   printf("replace_image_index %d %s\n", index, info->path);
-//   return true;
-// }
-
-// static bool add_image_index() { max_disk_index++; return true; }
-// static bool set_initial_image(unsigned index, const char *path) {
-//   printf("set_initial_image %d %s\n", index, path);
-//   return true;
-// }
-
-// static bool get_image_path(unsigned index, char *path, size_t len) {
-//   printf("get_image_path %d %d\n", index, len);
-//   strncpy(path, disk_info[index].path, len);
-//   return true;
-// }
-
 struct retro_disk_control_ext_callback disk_control = {
     set_eject_state,
     get_eject_state,
     get_image_index,
     set_image_index,
     get_num_images,
-    0,
-    0,
-    0,
-    0,
-    //  replace_image_index,
-    //  add_image_index,
-    //  set_initial_image,
-    //  get_image_path,
+    0, //  replace_image_index,
+    0, //  add_image_index,
+    0, //  set_initial_image,
+    0, //  get_image_path,
     get_image_label,
 };
 
