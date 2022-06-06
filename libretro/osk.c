@@ -220,4 +220,3 @@ void handle_osk(int buttons) {
   prev_buttons = buttons;
 }
 
-// TODO CTRL-L, CTRL-1
