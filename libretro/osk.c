@@ -1,6 +1,7 @@
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
+
 #include "core.h"
 #include "libatari800/libatari800.h"
 #include "libretro.h"
@@ -112,84 +113,105 @@ static void draw_box(unsigned short *mbuffer, int x, int y, int dx, int dy, unsi
   }
 }
 
-#include "font2.i"
+static uint8_t charset[0x400];
+void MEMORY_GetCharset(uint8_t *cs);
 
 static void draw_text(uint16_t *mbuffer, int x, int y, uint16_t fg, uint16_t bg, const char *string) {
+  static int initialised = 0;
+  if (!initialised) {
+    MEMORY_GetCharset(charset);
+    initialised = 1;
+  }
   int len = strlen(string);
   for (int ypixel = 0; ypixel < 8; ypixel++) {
     for (int col = 0; col < len; col++) {
-      uint8_t b = font_array[(string[col] ^ 0x80) * 8 + ypixel];
-      for (int bit = 0; bit < 7; bit++) {
-        put_pixel(mbuffer, x + col * 7 + bit, y + ypixel, (b & (1 << (7 - bit))) ? fg : bg);
+      uint8_t b = charset[(string[col] & 0x7f) * 8 + ypixel] ^ (string[col] & 0x80 ? 0 : 255);
+      for (int bit = 0; bit < 8; bit++) {
+        put_pixel(mbuffer, x + col * 8 + bit, y + ypixel, (b & (1 << (7 - bit))) ? fg : bg);
       }
     }
   }
 }
 
-#define XSIDE 28
+#define XSIDE 27
 #define YSIDE 15
 #define YBASE (FRAME_BUF_HEIGHT - OSK_NUM_ROWS * YSIDE - 16)
 #define XBASE ((FRAME_BUF_WIDTH - OSK_NUM_COLUMNS * XSIDE) / 2)
 
-void osk_render(uint16_t *pix, int vx, int vy, int SHIFTON, int CTRLON) {
+int osk_x = 0, osk_y = 0, osk_active = 0, prev_buttons = 0, shift_mode = 0, ctrl_mode = 0;
+void core_osk_overlay(uint16_t *pix) {
+  if (!osk_active)
+    return;
   for (int x = 0; x < OSK_NUM_COLUMNS; x++) {
     for (int y = 0; y < OSK_NUM_ROWS; y++) {
       struct osk_desc *key = &osk_desc[y * OSK_NUM_COLUMNS + x];
-      char *str = SHIFTON ? key->shift : CTRLON ? key->ctrl : key->normal;
-      int selected = x == vx && y == vy;
+      char *str = input.shift ? key->shift : input.control ? key->ctrl : key->normal;
+      int selected = x == osk_x && y == osk_y;
       int col = selected ? RGB565(2, 31, 1) : RGB565(28, 28, 31);
       draw_box(pix, XBASE + x * XSIDE, YBASE + y * YSIDE, XSIDE, YSIDE, RGB565(7, 2, 1));
-      if (key->val == AKEY_SHFT && SHIFTON)
+      if (key->val == AKEY_SHFT && input.shift)
         col = selected ? RGB565(2, 31, 21) : RGB565(2, 2, 31);
-      if (key->val == AKEY_CTRL && CTRLON)
+      if (key->val == AKEY_CTRL && input.control)
         col = selected ? RGB565(2, 31, 21) : RGB565(2, 2, 31);
-      draw_text(pix, XBASE + 4 + x * XSIDE, YBASE + 4 + YSIDE * y, col, 0, str);
+      draw_text(pix, XBASE + 2 + x * XSIDE, YBASE + 4 + YSIDE * y, col, 0, str);
     }
   }
-  draw_box(pix, XBASE + vx * XSIDE, YBASE + vy * YSIDE, XSIDE, YSIDE, RGB565(31, 2, 1));
+  draw_box(pix, XBASE + osk_x * XSIDE, YBASE + osk_y * YSIDE, XSIDE, YSIDE, RGB565(31, 2, 1));
 }
 
 int osk_get_keycode(int x, int y) { return osk_desc[y * OSK_NUM_COLUMNS + x].val; }
 
-int osk_x = 0, osk_y = 0, osk_active = 0, prev_buttons = 0, shift_mode = 0, ctrl_mode = 0;
-void core_osk_overlay(uint16_t *frame_buf) {
-  if (osk_active) osk_render(frame_buf, osk_x, osk_y, shift_mode, ctrl_mode);
-}
 static int clicked_frame;
 int clicked_with_repeat(int buttons, int button) {
-  if (!(buttons & (1 << button))) return 0;
-  if (!(prev_buttons & (1 << button))) return 1;
-  if (clicked_frame >= 20 && clicked_frame % 10 == 0) return 1;
+  if (!(buttons & (1 << button)))
+    return 0;
+  if (!(prev_buttons & (1 << button)))
+    return 1;
+  if (clicked_frame >= 20 && clicked_frame % 10 == 0)
+    return 1;
   return 0;
 }
 void handle_osk_active(int buttons) {
   clicked_frame = buttons == prev_buttons ? clicked_frame + 1 : 0;
-  if (clicked_with_repeat(buttons, RETRO_DEVICE_ID_JOYPAD_LEFT)) osk_x = (osk_x + OSK_NUM_COLUMNS - 1) % OSK_NUM_COLUMNS;
-  if (clicked_with_repeat(buttons, RETRO_DEVICE_ID_JOYPAD_RIGHT)) osk_x = (osk_x + 1) % OSK_NUM_COLUMNS;
-  if (clicked_with_repeat(buttons, RETRO_DEVICE_ID_JOYPAD_UP)) osk_y = (osk_y + OSK_NUM_ROWS - 1) % OSK_NUM_ROWS;
-  if (clicked_with_repeat(buttons, RETRO_DEVICE_ID_JOYPAD_DOWN)) osk_y = (osk_y + 1) % OSK_NUM_ROWS;
+  if (clicked_with_repeat(buttons, RETRO_DEVICE_ID_JOYPAD_LEFT))
+    osk_x = (osk_x + OSK_NUM_COLUMNS - 1) % OSK_NUM_COLUMNS;
+  if (clicked_with_repeat(buttons, RETRO_DEVICE_ID_JOYPAD_RIGHT))
+    osk_x = (osk_x + 1) % OSK_NUM_COLUMNS;
+  if (clicked_with_repeat(buttons, RETRO_DEVICE_ID_JOYPAD_UP))
+    osk_y = (osk_y + OSK_NUM_ROWS - 1) % OSK_NUM_ROWS;
+  if (clicked_with_repeat(buttons, RETRO_DEVICE_ID_JOYPAD_DOWN))
+    osk_y = (osk_y + 1) % OSK_NUM_ROWS;
   if (buttons & (1 << RETRO_DEVICE_ID_JOYPAD_A)) {
     int clicked = !(prev_buttons & (1 << RETRO_DEVICE_ID_JOYPAD_A));
     int key = osk_get_keycode(osk_x, osk_y);
-    if (key == AKEY_SHFT && clicked) shift_mode = !shift_mode;
-    if (key == AKEY_CTRL && clicked) ctrl_mode = !ctrl_mode;
-    if (key == 1000 && clicked) osk_opacity = !osk_opacity;
-    if (key == AKEY_START) input.start = 1;
-    if (key == AKEY_SELECT) input.select = 1;
-    if (key == AKEY_OPTION) input.option = 1;
-    if ((key == AKEY_COLDSTART || key == AKEY_BREAK) && clicked) input.special = -key;
-    if (key == AKEY_BREAK && clicked) input.special = -AKEY_BREAK;
+    if (key == AKEY_SHFT && clicked)
+      shift_mode = !shift_mode;
+    if (key == AKEY_CTRL && clicked)
+      ctrl_mode = !ctrl_mode;
+    if (key == 1000 && clicked)
+      osk_opacity = !osk_opacity;
+    if (key == AKEY_START)
+      input.start = 1;
+    if (key == AKEY_SELECT)
+      input.select = 1;
+    if (key == AKEY_OPTION)
+      input.option = 1;
+    if ((key == AKEY_COLDSTART || key == AKEY_BREAK) && clicked)
+      input.special = -key;
     if (key == 0) {
       input.keychar = shift_mode ? 'L' : 'l';
     } else if (key > 0) {
-      input.keycode = key | (shift_mode ? 0x40: 0) | (ctrl_mode ? 0x80 : 0);
+      input.keycode = key | (shift_mode ? AKEY_SHFT : 0) | (ctrl_mode ? AKEY_CTRL : 0);
     }
   };
-  input.shift = shift_mode > 0;
-  input.control = ctrl_mode > 0;
+  if (shift_mode)
+    input.shift = 1;
+  if (ctrl_mode)
+    input.control = 1;
 }
 void handle_osk(int buttons) {
-  if (buttons & (1 << RETRO_DEVICE_ID_JOYPAD_L) && !(prev_buttons & (1 << RETRO_DEVICE_ID_JOYPAD_L))) osk_active = !osk_active;
+  if (buttons & (1 << RETRO_DEVICE_ID_JOYPAD_L) && !(prev_buttons & (1 << RETRO_DEVICE_ID_JOYPAD_L)))
+    osk_active = !osk_active;
   if (osk_active) {
     handle_osk_active(buttons);
     input.joy0 = input.joy1 = input.joy2 = input.joy3 = 0;
@@ -198,4 +220,4 @@ void handle_osk(int buttons) {
   prev_buttons = buttons;
 }
 
-// TODO CTRL-L, CTRL-1, real shift key + osk
+// TODO CTRL-L, CTRL-1
