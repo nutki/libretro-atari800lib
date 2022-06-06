@@ -8,8 +8,6 @@
 #include "libretro.h"
 #include "config.h"
 
-#define FRAME_BUF_WIDTH 384
-#define FRAME_BUF_HEIGHT 240
 static uint16_t frame_buf[FRAME_BUF_WIDTH * FRAME_BUF_HEIGHT];
 
 input_template_t input;
@@ -182,6 +180,7 @@ void retro_run(void) {
   for (int i = 0; i < FRAME_BUF_HEIGHT * FRAME_BUF_WIDTH; i++) {
     frame_buf[i] = palette[frame[i]];
   }
+  core_osk_overlay(frame_buf);
   video_cb(frame_buf, FRAME_BUF_WIDTH, FRAME_BUF_HEIGHT, 2 * FRAME_BUF_WIDTH);
 
   int16_t *audio = (void *)libatari800_get_sound_buffer();

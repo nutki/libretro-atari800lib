@@ -9,7 +9,8 @@ SOURCES_C := \
 ifdef WANT_5200
 	SOURCES_C += $(LIBRETRO_CORE_DIR)/core_5200.c
 else
-	SOURCES_C += $(LIBRETRO_CORE_DIR)/core_800.c
+	SOURCES_C += $(LIBRETRO_CORE_DIR)/core_800.c \
+		$(LIBRETRO_CORE_DIR)/osk.c
 endif
 
 SOURCES_C += \

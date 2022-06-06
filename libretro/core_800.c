@@ -1,57 +1,12 @@
-#include "core.h"
-#include "libatari800/libatari800.h"
-#include "libretro.h"
 #include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#ifndef AKEY_0
-
-#define AKEY_0 0x32
-#define AKEY_1 0x1f
-#define AKEY_2 0x1e
-#define AKEY_3 0x1a
-#define AKEY_4 0x18
-#define AKEY_5 0x1d
-#define AKEY_6 0x1b
-#define AKEY_7 0x33
-#define AKEY_8 0x35
-#define AKEY_9 0x30
-
-#define AKEY_a 0x3f
-#define AKEY_b 0x15
-#define AKEY_c 0x12
-#define AKEY_d 0x3a
-#define AKEY_e 0x2a
-#define AKEY_f 0x38
-#define AKEY_g 0x3d
-#define AKEY_h 0x39
-#define AKEY_i 0x0d
-#define AKEY_j 0x01
-#define AKEY_k 0x05
-#define AKEY_l 0x00
-#define AKEY_m 0x25
-#define AKEY_n 0x23
-#define AKEY_o 0x08
-#define AKEY_p 0x0a
-#define AKEY_q 0x2f
-#define AKEY_r 0x28
-#define AKEY_s 0x3e
-#define AKEY_t 0x2d
-#define AKEY_u 0x0b
-#define AKEY_v 0x10
-#define AKEY_w 0x2e
-#define AKEY_x 0x16
-#define AKEY_y 0x2b
-#define AKEY_z 0x17
-
-#define AKEY_WARMSTART -2
-#define AKEY_COLDSTART -3
-#define AKEY_EXIT -4
-#define AKEY_BREAK -5
-
-#endif
+#include "core.h"
+#include "libatari800/libatari800.h"
+#include "libretro.h"
+#include "osk.h"
 
 struct keymap keymap[] = {
     {RETROK_0, AKEY_0},
@@ -289,6 +244,7 @@ void core_handle_input(void) {
   input.control = keyboard_state[RETROK_LCTRL] || keyboard_state[RETROK_RCTRL] ? 1 : 0;
   input.special = keyboard_state[RETROK_F10] ? -AKEY_BREAK : 0;
   input.special = keyboard_state[RETROK_F9] ? -AKEY_WARMSTART : 0;
+  handle_osk(val);
 }
 
 static int includes_word(const char *s, const char *word) {
