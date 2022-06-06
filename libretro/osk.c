@@ -18,7 +18,7 @@ static struct osk_desc {
     {"STA", "STA", "STA", AKEY_START},
     {"SEL", "SEL", "SEL", AKEY_SELECT},
     {"OPT", "OPT", "OPT", AKEY_OPTION},
-    {"RES", "RES", "RES", AKEY_COLDSTART},
+    {"RES", "RES", "RES", AKEY_WARMSTART},
     {" F1", " F1", " F1", AKEY_F1},
     {" F2", " F2", " F2", AKEY_F2},
     {" F3", " F3", " F3", AKEY_F3},
@@ -196,7 +196,7 @@ void handle_osk_active(int buttons) {
       input.select = 1;
     if (key == AKEY_OPTION)
       input.option = 1;
-    if ((key == AKEY_COLDSTART || key == AKEY_BREAK) && clicked)
+    if ((key == AKEY_WARMSTART || key == AKEY_BREAK) && clicked)
       input.special = -key;
     if (key == 0) {
       input.keychar = shift_mode ? 'L' : 'l';
