@@ -582,16 +582,29 @@
 /* Define to allow volume only sound. */
 #define VOL_ONLY_SOUND 1
 
-/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
-   significant byte first (like Motorola and SPARC, unlike Intel). */
-#if defined AC_APPLE_UNIVERSAL_BUILD
-# if defined __BIG_ENDIAN__
-#  define WORDS_BIGENDIAN 1
-# endif
+#ifdef _MSC_VER
+#if _M_IX86 || _M_AMD64 || _M_ARM || _M_ARM64
+#define LSB_FIRST 1
+#elif _M_PPC
+#define MSB_FIRST 1
 #else
-# ifndef WORDS_BIGENDIAN
-/* #  undef WORDS_BIGENDIAN */
-# endif
+/* MSVC can run on _M_ALPHA and _M_IA64 too, but they're both bi-endian; need to find what mode MSVC runs them at */
+#error "unknown platform, can't determine endianness"
+#endif
+#else
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define MSB_FIRST 1
+#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define LSB_FIRST 1
+#else
+#error "Invalid endianness macros"
+#endif
+#endif
+
+#ifdef MSB_FIRST
+#  define WORDS_BIGENDIAN 1
+#else
+#  undef WORDS_BIGENDIAN
 #endif
 
 /* Define if unaligned word access is ok. */
