@@ -53,7 +53,7 @@ static struct osk_desc {
     {" p ", " P ", "P \x10", AKEY_p},
     {"Ret", "Ret", "Ret", AKEY_RETURN},
 
-    {"Ctl", "Ctl", "Ctl", AKEY_CTRL}, // page 1, line 4
+    {"Ctl", "Ctl", "CTL", AKEY_CTRL}, // page 1, line 4
     {" a ", " A ", "A \x01", AKEY_a},
     {" s ", " S ", "S \x13", AKEY_s},
     {" d ", " D ", "D \x04", AKEY_d},
@@ -86,8 +86,8 @@ static struct osk_desc {
     {" = ", " | ", " \x1d ", AKEY_EQUAL},
     {" * ", " ^ ", " \x1f ", AKEY_ASTERISK},
     {" / ", " ? ", " / ", AKEY_SLASH},
-    {" < ", "Clr", " < ", AKEY_LESS},
-    {" > ", "Ins", " > ", AKEY_GREATER},
+    {"", "", "", AKEY_NONE},
+    {"", "", "", AKEY_NONE},
     {" \x9e ", " \x9e ", " \x9e ", AKEY_LEFT},
     {" \x9d ", " \x9d ", " \x9d ", AKEY_DOWN},
     {" \x9f ", " \x9f ", " \x9f ", AKEY_RIGHT},
@@ -113,10 +113,10 @@ static void draw_box(unsigned short *mbuffer, int x, int y, int dx, int dy, unsi
   }
 }
 
-static uint8_t charset[0x400];
 void MEMORY_GetCharset(uint8_t *cs);
 
 static void draw_text(uint16_t *mbuffer, int x, int y, uint16_t fg, uint16_t bg, const char *string) {
+  static uint8_t charset[0x400];
   static int initialised = 0;
   if (!initialised) {
     MEMORY_GetCharset(charset);
@@ -147,16 +147,16 @@ void core_osk_overlay(uint16_t *pix) {
       struct osk_desc *key = &osk_desc[y * OSK_NUM_COLUMNS + x];
       char *str = input.shift ? key->shift : input.control ? key->ctrl : key->normal;
       int selected = x == osk_x && y == osk_y;
-      int col = selected ? RGB565(2, 31, 1) : RGB565(28, 28, 31);
-      draw_box(pix, XBASE + x * XSIDE, YBASE + y * YSIDE, XSIDE, YSIDE, RGB565(7, 2, 1));
+      int col = selected ? RGB565(0, 31, 0) : RGB565(31, 31, 31);
+      draw_box(pix, XBASE + x * XSIDE, YBASE + y * YSIDE, XSIDE, YSIDE, RGB565(0, 0, 0));
       if (key->val == AKEY_SHFT && input.shift)
-        col = selected ? RGB565(2, 31, 21) : RGB565(2, 2, 31);
+        col = selected ? RGB565(0, 31, 31) : RGB565(0, 31, 21);
       if (key->val == AKEY_CTRL && input.control)
-        col = selected ? RGB565(2, 31, 21) : RGB565(2, 2, 31);
+        col = selected ? RGB565(0, 31, 31) : RGB565(0, 31, 21);
       draw_text(pix, XBASE + 2 + x * XSIDE, YBASE + 4 + YSIDE * y, col, 0, str);
     }
   }
-  draw_box(pix, XBASE + osk_x * XSIDE, YBASE + osk_y * YSIDE, XSIDE, YSIDE, RGB565(31, 2, 1));
+  draw_box(pix, XBASE + osk_x * XSIDE, YBASE + osk_y * YSIDE, XSIDE, YSIDE, RGB565(31, 0, 0));
 }
 
 int osk_get_keycode(int x, int y) { return osk_desc[y * OSK_NUM_COLUMNS + x].val; }
@@ -200,7 +200,7 @@ void handle_osk_active(int buttons) {
       input.special = -key;
     if (key == 0) {
       input.keychar = shift_mode ? 'L' : 'l';
-    } else if (key > 0) {
+    } else if (key > 0 && key < 256 && (key & 0x3F)) {
       input.keycode = key | (shift_mode ? AKEY_SHFT : 0) | (ctrl_mode ? AKEY_CTRL : 0);
     }
   };
