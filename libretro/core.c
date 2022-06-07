@@ -96,6 +96,22 @@ bool get_artifacting_mode_is_new(void) {
     return true;
   return false;
 }
+const char *get_artifacting_mode(void) {
+  const char *mode_str = get_variable("atari800lib_artifacting");
+  if (!strncmp(mode_str, "New ", 4))
+    mode_str += 4;
+  if (!strcmp(mode_str, "None"))
+    return "0";
+  if (!strcmp(mode_str, "Blue/Brown 1"))
+    return "1";
+  if (!strcmp(mode_str, "Blue/Brown 2"))
+    return "2";
+  if (!strcmp(mode_str, "GTIA"))
+    return "3";
+  if (!strcmp(mode_str, "CTIA"))
+    return "4";
+  return core_get_auto_artifacting_mode();
+}
 
 const char *system_dir, *content_dir;
 char config_file_path[FILENAME_MAX];
@@ -171,7 +187,21 @@ void handle_input(void) {
   if (input.keycode && input.shift)
     input.keycode |= 0x40;
 }
+
+void check_variable_updates(void) {
+  bool updated;
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
+    extern int ANTIC_artif_mode;
+    extern int ANTIC_artif_new;
+    void ANTIC_UpdateArtifacting(void);
+    ANTIC_artif_mode = get_artifacting_mode()[0]-'0';
+    ANTIC_artif_new = get_artifacting_mode_is_new();
+    ANTIC_UpdateArtifacting();
+  }
+}
+
 void retro_run(void) {
+  check_variable_updates();
   input_poll_cb();
   handle_input();
   libatari800_next_frame(&input);

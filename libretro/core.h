@@ -30,6 +30,7 @@ void core_handle_input(void);
 struct retro_input_descriptor *core_get_retro_input_descriptors();
 void core_set_environment(void);
 void core_osk_overlay(uint16_t *frame_buf);
+const char *core_get_auto_artifacting_mode(void);
 
 // Common Variables
 #define FRAME_BUF_WIDTH 384
@@ -45,6 +46,7 @@ extern const char *content_dir;
 
 // Common functions
 const bool get_artifacting_mode_is_new();
+const char *get_artifacting_mode(void);
 const char *get_variable(const char *key);
 
 // Missing key definitions from libatari800.h

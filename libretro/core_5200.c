@@ -219,20 +219,8 @@ void core_handle_input(void) {
     INPUT_joy_5200_max = 114 + max_analog * 100 / (32 * 1024);
 }
 
-const char *get_artifacting_mode(uint32_t crc) {
-  const char *mode_str = get_variable("atari800lib_artifacting");
-  if (!strncmp(mode_str, "New ", 4))
-    mode_str += 4;
-  if (!strcmp(mode_str, "None"))
-    return "0";
-  if (!strcmp(mode_str, "Blue/Brown 1"))
-    return "1";
-  if (!strcmp(mode_str, "Blue/Brown 2"))
-    return "2";
-  if (!strcmp(mode_str, "GTIA"))
-    return "3";
-  if (!strcmp(mode_str, "CTIA"))
-    return "4";
+uint32_t game_crc;
+const char *core_get_auto_artifacting_mode(void) {
   static struct {
     uint32_t crc;
     const char *mode;
@@ -243,7 +231,7 @@ const char *get_artifacting_mode(uint32_t crc) {
       {0x35484751, "2"}, // AE
   };
   for (int i = 0; i < sizeof(auto_modes) / sizeof(auto_modes[0]); i++) {
-    if (crc == auto_modes[i].crc)
+    if (game_crc == auto_modes[i].crc)
       return auto_modes[i].mode;
   }
   return "0";
@@ -285,6 +273,7 @@ void core_load_game(const char *last_file_name) {
   FILE *fp = fopen(last_file_name, "rb");
   uint32_t crc = 0;
   CRC32_FromFile(fp, &crc);
+  game_crc = crc;
   fseek(fp, 0, SEEK_END);
   int size = ftell(fp);
   l.log(RETRO_LOG_INFO, "cart file size %d, CRC %08x\n", size, crc);
@@ -311,7 +300,7 @@ void core_load_game(const char *last_file_name) {
                              "-ntsc-artif",
                              get_artifacting_mode_is_new() ? "ntsc-new" : "ntsc-old",
                              "-artif",
-                             get_artifacting_mode(crc),
+                             get_artifacting_mode(),
                              "-5200",
                              "-no-autosave-config",
                              "-config",

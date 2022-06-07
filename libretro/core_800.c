@@ -180,6 +180,7 @@ struct retro_core_option_definition retro_options[] = {
 
     {0},
 };
+const char *get_artifacting_mode(void);
 
 bool supports_no_game = false;
 
@@ -315,22 +316,7 @@ static int get_sio_accel(void) {
   const char *v = get_variable("atari800lib_sioaccel");
   return strcmp(v, "enabled") == 0 ? 1 : 0;
 }
-const char *get_artifacting_mode(void) {
-  const char *mode_str = get_variable("atari800lib_artifacting");
-  if (!strncmp(mode_str, "New ", 4))
-    mode_str += 4;
-  if (!strcmp(mode_str, "None"))
-    return "0";
-  if (!strcmp(mode_str, "Blue/Brown 1"))
-    return "1";
-  if (!strcmp(mode_str, "Blue/Brown 2"))
-    return "2";
-  if (!strcmp(mode_str, "GTIA"))
-    return "3";
-  if (!strcmp(mode_str, "CTIA"))
-    return "4";
-  return "0";
-}
+const char *core_get_auto_artifacting_mode(void) { return "0"; }
 
 static bool is_ejected = false;
 static unsigned disk_index = 0, max_disk_index = 3;
@@ -425,6 +411,10 @@ void core_load_game(const char *filename) {
   if (strcaseendswith(filename, ".m3u")) {
     filename = load_m3u(filename);
   }
+  // Make sure that the value of the ESC_enable_sio_patch is reset to TRUE on each library init.
+  // Otherwise sioaccel option cannot be changed back to false with argv alone.
+  extern int ESC_enable_sio_patch;
+  ESC_enable_sio_patch = 1;
   const char *args[] = {fake_exe_file_path,
                         get_system_model(),
                         get_tv_mode(filename),
