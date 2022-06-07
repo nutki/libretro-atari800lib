@@ -83,6 +83,7 @@ struct retro_input_descriptor retro_input_desc_joystick[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Space"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Option"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Return"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Toggle OSK"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left"},
@@ -99,6 +100,7 @@ struct retro_input_descriptor retro_input_desc_paddles[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Space"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Option"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Return"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Toggle OSK"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
     {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Paddle A"},
@@ -220,7 +222,7 @@ static int handle_paddles(void) {
     int pot_b =
         input_state_cb(MOUSE_PORT, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
     input.mouse_buttons =
-        ((val & (1 << RETRO_DEVICE_ID_JOYPAD_A)) ? 1 : 0) | ((val & (1 << RETRO_DEVICE_ID_JOYPAD_B)) ? 1 : 0);
+        ((val & (1 << RETRO_DEVICE_ID_JOYPAD_A)) ? 1 : 0) | ((val & (1 << RETRO_DEVICE_ID_JOYPAD_B)) ? 2 : 0);
     input.mousex = (pot_a + 32 * 1024) * POT_MAX / (64 * 1024);
     input.mousey = (pot_b + 32 * 1024) * POT_MAX / (64 * 1024);
     return val;
