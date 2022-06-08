@@ -215,8 +215,12 @@ static int handle_joystick(int player, uint8_t *joy, uint8_t *trig) {
 #define POT_MIN 0
 #define POT_MAX 228
 static int handle_paddles(void) {
-  input.mouse_mode = 1;
-  if (port_device[MOUSE_PORT] == RETRO_DEVICE_ATARI_PADDLES) {
+  // If INPUT_direct_mouse is disabled and INPUT_mouse_mode is 0, the paddle pot register will be reset to the disconnected state
+  extern int INPUT_mouse_mode; /* device emulated with mouse, 1 = PADDLES */
+  extern int INPUT_direct_mouse;
+  int use_paddles = port_device[MOUSE_PORT] == RETRO_DEVICE_ATARI_PADDLES;
+  input.mouse_mode = INPUT_mouse_mode = INPUT_direct_mouse = use_paddles;
+  if (use_paddles) {
     int val = input_state_cb(MOUSE_PORT, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
     int pot_a =
         input_state_cb(MOUSE_PORT, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
