@@ -267,7 +267,7 @@ static int includes_word(const char *s, const char *word) {
       if (tolower(*w) != tolower(*s))
         break;
     }
-    if (!*w)
+    if (!*w && !isalpha(*s))
       return 1; // found complete key word
     /* find end of a word */
     while (isalpha(*s))
