@@ -113,7 +113,7 @@ const char *get_artifacting_mode(void) {
   return core_get_auto_artifacting_mode();
 }
 
-const char *system_dir, *content_dir;
+const char *system_dir;
 char config_file_path[FILENAME_MAX];
 char fake_exe_file_path[FILENAME_MAX];
 void dummy_log(enum retro_log_level level, const char *fmt, ...) {}
@@ -136,12 +136,11 @@ void retro_set_environment(retro_environment_t cb) {
   uint64_t quirks = RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
   environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
   environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir);
-  environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &content_dir);
   environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &l);
   if (system_dir) {
-    snprintf(config_file_path, sizeof(config_file_path) - 1, "%s" DEFAULT_SLASH "%s", system_dir, config_file_name);
+    snprintf(config_file_path, sizeof(config_file_path) - 1, "%s%s%s", system_dir, DEFAULT_SLASH, config_file_name);
     // Pretend the emulator is run from the system directory so is will be included in the ROM file search
-    snprintf(fake_exe_file_path, sizeof(fake_exe_file_path) - 1, "%s" DEFAULT_SLASH "atari800", system_dir);
+    snprintf(fake_exe_file_path, sizeof(fake_exe_file_path) - 1, "%s%satari800", system_dir, DEFAULT_SLASH);
   } else {
     strcpy(config_file_path, config_file_name);
     strcpy(fake_exe_file_path, "atari800");

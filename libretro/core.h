@@ -18,8 +18,10 @@ extern struct retro_log_callback l;
 #define ANALOG_MIN 4096
 #ifdef _WIN32
 #define DEFAULT_SLASH "\\"
+#define IS_SLASH(c) ((c) == '\\' || (c) == '/')
 #else
 #define DEFAULT_SLASH "/"
+#define IS_SLASH(c) ((c) == '/')
 #endif
 
 // System specific functions
@@ -42,7 +44,6 @@ extern uint8_t keyboard_state[RETROK_LAST];
 #define NUM_PORTS 4
 extern unsigned port_device[NUM_PORTS];
 extern char config_file_path[], fake_exe_file_path[];
-extern const char *content_dir;
 
 // Common functions
 const bool get_artifacting_mode_is_new();

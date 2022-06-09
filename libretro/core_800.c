@@ -352,7 +352,7 @@ static bool get_image_label(unsigned index, char *label, size_t len) {
   return true;
 }
 static const char *load_m3u(const char *path) {
-  static char line[FILENAME_MAX];
+  static char line[FILENAME_MAX], content_dir[FILENAME_MAX];
   FILE *f = fopen(path, "ra");
   if (!f)
     return NULL;
@@ -376,9 +376,16 @@ static const char *load_m3u(const char *path) {
     if (max_disk_index == MAX_DISKS) {
       break;
     }
+    int dirlen = strlen(path);
+    while (dirlen && !IS_SLASH(path[dirlen-1])) {
+      dirlen--;
+    }
+    if (dirlen >= FILENAME_MAX) dirlen = FILENAME_MAX - 1;
+    memcpy(content_dir, path, dirlen);
+    content_dir[dirlen] = 0;
     snprintf(disk_info[max_disk_index].label, MAX_DISK_LABEL - 1, "%s", label ? label : s);
-    snprintf(disk_info[max_disk_index].path, FILENAME_MAX - 1, "%s" DEFAULT_SLASH "%s", content_dir, s);
-    max_disk_index++;
+    if (snprintf(disk_info[max_disk_index].path, FILENAME_MAX - 1, "%s%s", content_dir, s) > 0)
+      max_disk_index++;
   }
   fclose(f);
   if (!max_disk_index)
