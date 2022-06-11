@@ -215,7 +215,8 @@ static int handle_joystick(int player, uint8_t *joy, uint8_t *trig) {
 #define POT_MIN 0
 #define POT_MAX 228
 static int handle_paddles(void) {
-  // If INPUT_direct_mouse is disabled and INPUT_mouse_mode is 0, the paddle pot register will be reset to the disconnected state
+  // If INPUT_direct_mouse is disabled and INPUT_mouse_mode is 0, the paddle pot register will be reset to the
+  // disconnected state
   extern int INPUT_mouse_mode; /* device emulated with mouse, 1 = PADDLES */
   extern int INPUT_direct_mouse;
   int use_paddles = port_device[MOUSE_PORT] == RETRO_DEVICE_ATARI_PADDLES;
@@ -372,7 +373,9 @@ static const char *load_m3u(const char *path) {
   if (!f)
     return NULL;
   char *s;
-  max_disk_index = 0; disk_index = 0; is_ejected = false;
+  max_disk_index = 0;
+  disk_index = 0;
+  is_ejected = false;
   while ((s = fgets(line, sizeof(line), f))) {
     while (isspace(*s))
       s++;
@@ -392,10 +395,11 @@ static const char *load_m3u(const char *path) {
       break;
     }
     int dirlen = strlen(path);
-    while (dirlen && !IS_SLASH(path[dirlen-1])) {
+    while (dirlen && !IS_SLASH(path[dirlen - 1])) {
       dirlen--;
     }
-    if (dirlen >= FILENAME_MAX) dirlen = FILENAME_MAX - 1;
+    if (dirlen >= FILENAME_MAX)
+      dirlen = FILENAME_MAX - 1;
     memcpy(content_dir, path, dirlen);
     content_dir[dirlen] = 0;
     snprintf(disk_info[max_disk_index].label, MAX_DISK_LABEL - 1, "%s", label ? label : s);
