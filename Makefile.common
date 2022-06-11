@@ -37,7 +37,6 @@ SOURCES_C += \
 	$(ATARI_800_DIR)/esc.c  \
 	$(ATARI_800_DIR)/gtia.c  \
 	$(ATARI_800_DIR)/img_tape.c  \
-	$(ATARI_800_DIR)/log.c  \
 	$(ATARI_800_DIR)/memory.c  \
 	$(ATARI_800_DIR)/monitor.c  \
 	$(ATARI_800_DIR)/pbi.c  \

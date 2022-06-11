@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
 #include "core.h"
 #include "libatari800/libatari800.h"
 #include "libretro.h"
-#include "config.h"
 
 static uint16_t frame_buf[FRAME_BUF_WIDTH * FRAME_BUF_HEIGHT];
 
@@ -193,7 +193,7 @@ void check_variable_updates(void) {
     extern int ANTIC_artif_mode;
     extern int ANTIC_artif_new;
     void ANTIC_UpdateArtifacting(void);
-    ANTIC_artif_mode = get_artifacting_mode()[0]-'0';
+    ANTIC_artif_mode = get_artifacting_mode()[0] - '0';
     ANTIC_artif_new = get_artifacting_mode_is_new();
     ANTIC_UpdateArtifacting();
   }
@@ -282,3 +282,17 @@ void retro_cheat_set(unsigned idx, bool enabled, const char *code) {
   (void)enabled;
   (void)code;
 }
+
+#include <stdarg.h>
+// libatari800 log.c replacement functions
+void Log_print(const char *format, ...) {
+  va_list args;
+  char buffer[8192];
+  va_start(args, format);
+  int ret = vsnprintf(buffer, sizeof(buffer), format, args);
+  va_end(args);
+  if (ret > 0 && ret < sizeof(buffer))
+    l.log(RETRO_LOG_INFO, "%s\n", buffer);
+}
+
+void Log_flushlog(void) {}
