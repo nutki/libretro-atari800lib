@@ -182,9 +182,9 @@ void handle_input(void) {
     }
   }
   if (input.keycode && input.control)
-    input.keycode |= 0x80;
+    input.keycode |= AKEY_CTRL;
   if (input.keycode && input.shift)
-    input.keycode |= 0x40;
+    input.keycode |= AKEY_SHFT;
 }
 
 void check_variable_updates(void) {
