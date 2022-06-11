@@ -322,6 +322,18 @@ static int get_sio_accel(void) {
 }
 const char *core_get_auto_artifacting_mode(void) { return "0"; }
 
+static void set_message(const char *text) {
+  struct retro_message_ext msg;
+  msg.duration = 3000;
+  msg.level = RETRO_LOG_INFO;
+  msg.target = RETRO_MESSAGE_TARGET_OSD;
+  msg.msg = text;
+  msg.type = 0;
+  msg.priority = 0;
+  msg.progress = 0;
+  environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE_EXT, &msg);
+}
+
 static bool is_ejected = false;
 static unsigned disk_index = 0, max_disk_index = 3;
 #define MAX_DISK_LABEL 128
@@ -344,6 +356,9 @@ static bool set_image_index(unsigned index) {
     return true;
   disk_index = index;
   libatari800_mount_disk_image(1, disk_info[disk_index].path, 0);
+  static char message_text[MAX_DISK_LABEL + 100];
+  snprintf(message_text, sizeof(message_text) - 1, "Inserted disk: %s", disk_info[disk_index].label);
+  set_message(message_text);
   return true;
 }
 static unsigned get_num_images() { return max_disk_index; }
