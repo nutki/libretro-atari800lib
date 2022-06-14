@@ -157,7 +157,7 @@ struct retro_core_option_definition retro_options[] = {
     },
     {"atari800lib_artifacting",
      "NTSC Artifacting Emulation",
-     "Alters display colors for games relying on the composite NTSC signal artifacts. Game reload required.",
+     "Alters display colors for games relying on the composite NTSC signal artifacts.",
      {
          {"None", 0},
          {"Blue/Brown 1", 0},
@@ -177,7 +177,16 @@ struct retro_core_option_definition retro_options[] = {
         {{"disabled", 0}, {"enabled", 0}},
         "enabled",
     },
-
+    {"atari800lib_leds",
+     "IO Activity LEDs",
+     "Indicate disk and tape IO.",
+     {
+         {"None", 0},
+         {"On screen", 0},
+         {"On screen with counter", 0},
+         {"API passthrough", 0},
+     },
+     "API passthrough"},
     {0},
 };
 const char *get_artifacting_mode(void);
@@ -189,6 +198,52 @@ char *config_file_name = ".atari800lib.cfg";
 void core_get_system_info(struct retro_system_info *info) {
   info->library_name = "Atari 800 (libatari800)";
   info->valid_extensions = "xfd|atr|cdm|cas|bin|atx|car|com|xex|m3u";
+}
+
+#define DISK_LED_ID 0
+#define TAPE_LED_ID 1
+static int disk_led_state;
+static int tape_led_state;
+static struct retro_led_interface led_if;
+extern int Screen_show_disk_led;
+extern int Screen_show_sector_counter;
+static void init_leds() {
+  disk_led_state = 0;
+  tape_led_state = 0;
+  const char *led_mode = get_variable("atari800lib_leds");
+  Screen_show_disk_led = 0;
+  Screen_show_sector_counter = 0;
+  led_if.set_led_state = 0;
+  if (!strcmp(led_mode, "API passthrough")) {
+    environ_cb(RETRO_ENVIRONMENT_GET_LED_INTERFACE, &led_if);
+  } else if (!strcmp(led_mode, "On screen")) {
+    Screen_show_disk_led = 1;
+  } else if (!strcmp(led_mode, "On screen with counter")) {
+    Screen_show_disk_led = 1;
+    Screen_show_sector_counter = 1;
+  }
+}
+static void handle_leds() {
+  if (!led_if.set_led_state)
+    return;
+
+  // LED Logic taken from screen.c
+  extern int SIO_last_op_time;
+  extern int CASSETTE_writable;
+  extern int CASSETTE_readable;
+  extern int CASSETTE_record;
+  int new_tape_state = (CASSETTE_readable && !CASSETTE_record) || (CASSETTE_writable && CASSETTE_record);
+  int new_disk_state = SIO_last_op_time > 0;
+  if (new_disk_state)
+    SIO_last_op_time--;
+
+  if (disk_led_state != new_disk_state)
+    led_if.set_led_state(DISK_LED_ID, new_disk_state);
+  if (tape_led_state != new_tape_state)
+    led_if.set_led_state(TAPE_LED_ID, new_tape_state);
+
+  disk_led_state = new_disk_state;
+  tape_led_state = new_tape_state;
 }
 
 static int handle_joystick(int player, uint8_t *joy, uint8_t *trig) {
@@ -253,6 +308,7 @@ void core_handle_input(void) {
   input.special = keyboard_state[RETROK_F10] ? -AKEY_BREAK : 0;
   input.special = keyboard_state[RETROK_F9] ? -AKEY_WARMSTART : 0;
   handle_osk(val);
+  handle_leds();
 }
 
 static int includes_word(const char *s, const char *word) {
@@ -438,6 +494,7 @@ bool strcaseendswith(const char *str, const char *suffix) {
 }
 
 void core_load_game(const char *filename) {
+  init_leds();
   if (strcaseendswith(filename, ".m3u")) {
     filename = load_m3u(filename);
   }
