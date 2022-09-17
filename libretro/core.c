@@ -82,12 +82,13 @@ void retro_set_controller_port_device(unsigned port, unsigned device) {
 void retro_get_system_av_info(struct retro_system_av_info *info) {
   info->timing.fps = libatari800_get_fps();
   info->timing.sample_rate = libatari800_get_sound_frequency();
+  float pixel_ratio = info->timing.fps < 55 ? 1.039642 : 0.8571;
 
   info->geometry.base_width = FRAME_BUF_WIDTH;
   info->geometry.base_height = FRAME_BUF_HEIGHT;
   info->geometry.max_width = FRAME_BUF_WIDTH;
   info->geometry.max_height = FRAME_BUF_HEIGHT;
-  info->geometry.aspect_ratio = (float)FRAME_BUF_WIDTH / (float)FRAME_BUF_HEIGHT;
+  info->geometry.aspect_ratio = pixel_ratio * FRAME_BUF_WIDTH / FRAME_BUF_HEIGHT;
 }
 
 bool get_artifacting_mode_is_new(void) {
